@@ -41,6 +41,12 @@ class EvoFunc {
         var maxCount = 0.0
 
         fun step(steps: Int) {
+            (0 until worldWidth).forEach { x ->
+                (0 until worldHeight).forEach { y ->
+                    buffer[x][y].count *= 0.7
+                }
+            }
+
             var skipped = 0
             (0 until steps).forEach {
                 val i = Dice.nextInt(DNA.size)
@@ -58,7 +64,7 @@ class EvoFunc {
                     skipped++
                 }
             }
-
+            println(maxCount)
         }
 
         step(10000000)
@@ -81,8 +87,8 @@ class EvoFunc {
 //                            val rgb = (normalized * 0xFFFFFF).toInt()
 //                            canvasGraphics.color = Color(rgb)
 
-                            val rgb = ((buffer[x][y].count / maxCount) * 0xFFFFFF).toInt()
-                            canvasGraphics.color = Color(rgb)
+//                            val rgb = ((buffer[x][y].count / maxCount) * 0xFFFFFF).toInt()
+//                            canvasGraphics.color = Color(rgb)
 
                             canvasGraphics.color = DNA.colorizer.apply(buffer[x][y].count, 0xFF)
                         } else {
@@ -97,11 +103,6 @@ class EvoFunc {
 
                 Genetic.mutateDna(DNA, probability = 0.2)
 
-                (0 until worldWidth).forEach { x ->
-                    (0 until worldHeight).forEach { y ->
-                        buffer[x][y].count *= 0.85
-                    }
-                }
 
                 if (saveOutput && (i % saveOutputFrequency == 0)) {
                     println("save...")
