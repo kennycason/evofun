@@ -1,0 +1,19 @@
+package evofunc.function
+
+import evofunc.geometry.Point
+import evofunc.random.Dice
+import kotlin.math.cos
+import kotlin.math.sin
+
+class Swirl(
+    private val a: Double = Dice.randomDouble(), private val b: Double = Dice.randomDouble(),
+    private val c: Double = Dice.randomDouble(), private val d: Double = Dice.randomDouble()
+) : PointFunction {
+    override fun apply(p: Point): Point {
+        val r = r(p)
+        val rSquared = r * r
+        val sinRSquared = sin(rSquared)
+        val cosRSquared = cos(rSquared)
+        return Point((a * p.x * sinRSquared) - (b * p.y * cosRSquared) + c, (a * p.x * cosRSquared) + (b * p.y * sinRSquared) + d)
+    }
+}
