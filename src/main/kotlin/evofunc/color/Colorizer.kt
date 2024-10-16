@@ -12,16 +12,17 @@ data class Colorizer(
     var p2: Double = 2.0,
     var p3: Double = 4.0,
     var center: Int = 128,
-    var width: Int = 127
+    var width: Int = 127,
+    var alpha: Double = 1.0
 ) {
 
-    fun apply(i: Double, alpha: Int = 0xFF): Color {
+    fun apply(i: Double): Color {
         val r = sin(f1 * i + p1) * width + center
         val g = sin(f2 * i + p2) * width + center
         val b = sin(f3 * i + p3) * width + center
 //        if ((r > 0xFF || r < 0) || (g > 0xFF || g < 0) || (b > 0xFF || b < 0))
 //            println("problem")
-        return Color(r.toInt(), g.toInt(), b.toInt(), alpha)
+        return Color(r.toInt(), g.toInt(), b.toInt(), (alpha * 0xFF).toInt())
     }
 
     companion object {

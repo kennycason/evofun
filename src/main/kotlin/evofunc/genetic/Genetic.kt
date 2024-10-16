@@ -1,19 +1,20 @@
 package evofunc.genetic
 
 import evofunc.color.Colorizer
+import evofunc.function.Abs
 import evofunc.function.Horseshoe
 import evofunc.function.Pdj
 import evofunc.function.PointFunction
 import evofunc.function.Popcorn
 import evofunc.function.SinSin
 import evofunc.function.Spherical
+import evofunc.function.Spiral
 import evofunc.function.Swirl
 import evofunc.random.Dice
-import java.util.Random
+import kotlin.math.max
 
 
 object Genetic {
-    private const val allFunctionsCount = 6
 
     fun buildDNA(length: Int): DNA {
         return DNA(
@@ -23,7 +24,7 @@ object Genetic {
     }
 
     private fun randomGene() = Gene(
-        function = buildRandomFunction(),
+        function = getRandomFunction(),
         a = Dice.randomDouble(),
         b = Dice.randomDouble(),
         c = Dice.randomDouble(),
@@ -33,59 +34,68 @@ object Genetic {
     )
 
     fun mutateDna(dna: DNA, probability: Double) {
-        if (Dice.nextInt(10) <= 1) {
-           mutateColorizer(dna.colorizer)
-            return
-        }
+        mutateColorizer(dna.colorizer, probability)
         for (gene in dna.genes) {
             mutateGene(gene, probability)
         }
     }
 
     private fun mutateGene(gene: Gene, probability: Double) {
-        if (Dice.randomDouble() >= probability) return
+        gene.function = if (Dice.nextDouble() < probability / 2) {
+            // println("mutate function")
+            getRandomFunction()
+        } else gene.function
+        gene.a = mutateDouble(gene.a, probability)
+        gene.b = mutateDouble(gene.b, probability)
+        gene.c = mutateDouble(gene.c, probability)
+        gene.d = mutateDouble(gene.d, probability)
+        gene.e = mutateDouble(gene.e, probability)
+        gene.f = mutateDouble(gene.f, probability)
+    }
 
-        val mutateSelection = Dice.nextInt(10)
-        when (mutateSelection) {
-            0 -> gene.function = buildRandomFunction()
-            else -> {
-                val i = Dice.nextInt(6) // 6 total parameters per gene
-                when (i) {
-                    0 -> gene.a = Dice.randomDouble()
-                    1 -> gene.b = Dice.randomDouble()
-                    2 -> gene.c = Dice.randomDouble()
-                    3 -> gene.d = Dice.randomDouble()
-                    4 -> gene.e = Dice.randomDouble()
-                    5 -> gene.f = Dice.randomDouble()
-                }
-            }
+    private fun mutateColorizer(colorizer: Colorizer, probability: Double) {
+        colorizer.f1 = mutateDouble(colorizer.f1, probability)
+        colorizer.f2 = mutateDouble(colorizer.f2, probability)
+        colorizer.f3 = mutateDouble(colorizer.f3, probability)
+        colorizer.p1 = mutateDouble(colorizer.p1, probability)
+        colorizer.p2 = mutateDouble(colorizer.p2, probability)
+        colorizer.p3 = mutateDouble(colorizer.p3, probability)
+        colorizer.alpha = max(mutateDouble(colorizer.alpha, probability), 0.5)
+    }
+
+    private fun mutateDouble(value: Double, probability: Double): Double {
+        if (Dice.nextDouble() >= probability) return value
+
+        // println("mutate parameter")
+        val newValue = if (Dice.nextBoolean()) value + Dice.nextDouble() / 4
+        else value - Dice.nextDouble() / 4
+        return if (newValue < -1) -1.0
+        else if (newValue > 1) 1.0
+        else newValue
+    }
+
+    fun express(dna: DNA): ExpressedDNA {
+        return ExpressedDNA(
+            dna = dna,
+            expressed = dna.genes.map(::expressGene)
+        )
+    }
+
+    private fun expressGene(gene: Gene): PointFunction {
+        return when (gene.function) {
+            GeneFunction.SIN_SIN -> SinSin(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+            GeneFunction.SPHERICAL -> Spherical(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            GeneFunction.SWIRL -> Swirl(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            GeneFunction.HORSESHOE -> Horseshoe(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            GeneFunction.POPCORN -> Popcorn(a = gene.a, b = gene.b)
+            GeneFunction.PDJ -> SinSin(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+            GeneFunction.ABS -> Abs(a = gene.a, b = gene.b)
+            GeneFunction.SPIRAL -> Spiral(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
         }
     }
 
-    private fun mutateColorizer(colorizer: Colorizer) {
-        val i = Dice.nextInt(6)
-        when (i) {
-            0 -> colorizer.f1 = Dice.randomDouble()
-            1 -> colorizer.f2 = Dice.randomDouble()
-            2 -> colorizer.f3 = Dice.randomDouble()
-            3 -> colorizer.p1 = Dice.randomDouble()
-            4 -> colorizer.p2 = Dice.randomDouble() * 2
-            5 -> colorizer.p3 = Dice.randomDouble() * 4
-//            6 -> colorizer.center = random.nextInt(128)
-//            7 -> colorizer.width = random.nextInt(127)
-        }
+    private fun getRandomFunction(): GeneFunction {
+        return GeneFunction.entries.toTypedArray().random()
     }
 
-    private fun buildRandomFunction(): PointFunction {
-        val i = Dice.nextInt(allFunctionsCount)
-        return when (i) {
-            0 -> SinSin()
-            1 -> Spherical()
-            2 -> Swirl()
-            3 -> Horseshoe()
-            4 -> Popcorn()
-            5 -> Pdj()
-            else -> throw IllegalStateException()
-        }
-    }
 }
