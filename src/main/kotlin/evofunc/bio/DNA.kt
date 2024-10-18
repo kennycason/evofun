@@ -1,4 +1,4 @@
-package evofunc.genetic
+package evofunc.bio
 
 import evofunc.color.Colorizer
 import evofunc.function.PointFunction
@@ -21,12 +21,16 @@ data class Gene(
 )
 
 enum class GeneFunction {
+    ABS,
+    GUASSIAN,
+    HORSESHOE,
+    PARABOLA,
+    PDJ,
+    POPCORN,
+    SIN_COS,
     SIN_SIN,
     SPHERICAL,
+    SPIRAL,
+    SQUARED,
     SWIRL,
-    HORSESHOE,
-    POPCORN,
-    PDJ,
-    ABS,
-    SPIRAL
 }
