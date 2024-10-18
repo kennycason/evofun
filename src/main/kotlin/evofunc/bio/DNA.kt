@@ -33,4 +33,9 @@ enum class GeneFunction {
     SPIRAL,
     SQUARED,
     SWIRL,
+
+    ROTATE,
+    SCALE,
+    TRANSLATE,
+    DEFORMATION
 }

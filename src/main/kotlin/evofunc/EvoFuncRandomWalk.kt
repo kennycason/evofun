@@ -1,6 +1,9 @@
+package evofunc
+
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
 import evofunc.geometry.Point
+import evofunc.image.ImageEntropy
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -18,13 +21,15 @@ fun main(args: Array<String>) {
 
 class EvoFuncRandomWalk {
     // 16:9 512x288
-    private val worldWidth = 256
-    private val worldHeight = 256
+    private val worldWidth = 512
+    private val worldHeight = 512
     private val saveOutput = true
-    private val saveOutputFrequency = 100
+    private val saveOutputFrequency = 10
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private var organism = Organism(dna = Genetic.buildDNA(7), worldWidth, worldHeight)
+    private val genesCount = 7
+    private var organism =
+        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight, Organism.GeneExpressionOrder.RANDOM)
 
     fun run() {
         var i = 0
@@ -50,17 +55,36 @@ class EvoFuncRandomWalk {
             override fun paintComponent(g: Graphics) {
                 super.paintComponent(g)
 
-                organism.step(500000)
+                organism.step(10000000)
                 organism.express(canvasGraphics)
-                Genetic.mutateDna(organism.dna, probability = 0.03)
+               // println(organism.dna)
 
-                g.drawImage(canvas, 0, 0, width, height, this)
+                val normalizedEntropy = ImageEntropy.calculateNormalizedEntropy(canvas)
+                if (normalizedEntropy < 0.05) {
+                    Genetic.mutateDna(organism.dna, probability = 0.2)
+                } else {
+                    Genetic.mutateDna(organism.dna, probability = 0.02)
+                }
 
-                if (saveOutput && (i % saveOutputFrequency == 0)) {
+                if (saveOutput && (i > 0 && (i % saveOutputFrequency == 0))) {
                     saveCanvasAsImage()
                 }
 
+                g.drawImage(canvas, 0, 0, width, height, this)
+
                 i++
+            }
+
+            /*
+             * normalized entropy between 0.0 and 1.0
+             * Scale mutation rate based on normalized entropy
+             * Higher entropy means lower mutation rate (more interesting images need less mutation)
+             *
+             */
+            private fun getMutationRate(normalizedEntropy: Double, minRate: Double = 0.01, maxRate: Double = 1.0): Double {
+                val mutationRate = minRate + (1.0 - normalizedEntropy) * (maxRate - minRate)
+                //println("entropy: $normalizedEntropy, mutation: $mutationRate")
+                return mutationRate
             }
 
             private fun saveCanvasAsImage() {
@@ -79,6 +103,7 @@ class EvoFuncRandomWalk {
 
         while (true) {
             panel.repaint()
+//            sleep(2000)
         }
     }
 
