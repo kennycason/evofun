@@ -3,6 +3,7 @@ package evofunc
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
 import evofunc.image.Entropy
+import evofunc.random.Dice
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -15,19 +16,22 @@ import javax.swing.WindowConstants
 import kotlin.random.Random
 
 fun main(args: Array<String>) {
-    EvoFuncEvolveEntropy().run()
+    EvoFuncHalloweenParty().run()
 }
 
-class EvoFuncEvolveEntropy {
+class EvoFuncHalloweenParty {
     // 16:9 512x288
-    private val worldWidth = 512
-    private val worldHeight = 512
+    private val worldWidth = 640
+    private val worldHeight = 360
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
     private val genesCount = 7
-    private var organism = Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
-    private var mostFitOrganism = Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
+    private var organism = buildOrganism()
+    private var mostFitOrganism = buildOrganism()
     private var maxEntropy = Double.MIN_VALUE
+    private var turnsEntropyIsBelowThreshold = 0
+    private var mutationRate = 0.05
+
     fun run() {
         var i = 0
         val panel = object : JPanel() {
@@ -43,7 +47,8 @@ class EvoFuncEvolveEntropy {
                         }
                         if (e.keyCode == KeyEvent.VK_N) {
                             println("new dna")
-                            organism.dna = Genetic.buildDNA(3 + Random.nextInt(5))
+                            mostFitOrganism = buildOrganism()
+                            organism = organism.clone()
                         }
                     }
                 })
@@ -52,25 +57,47 @@ class EvoFuncEvolveEntropy {
             override fun paintComponent(g: Graphics) {
                 super.paintComponent(g)
 
+                //println(organism.dna)
                 organism.step(1000000)
                 organism.express(canvasGraphics)
-               // println(organism.dna)
-
                 organism.entropy = Entropy.calculateNormalizedEntropy(canvas)
-                if (organism.entropy >= maxEntropy) {
-                    maxEntropy = organism.entropy
-                    mostFitOrganism = organism.clone()
-                    saveCanvasAsImage()
-                } else {
-                    organism = mostFitOrganism.clone() // reset
+
+                if (organism.entropy <= 0.05) {
+                    turnsEntropyIsBelowThreshold++
                 }
 
-                val mutationRate = getMutationRate(organism.entropy, maxRate = 0.2)
-                Genetic.mutateDna(organism.dna, probability = mutationRate / 4)
+                if (turnsEntropyIsBelowThreshold > 10 || i % 100 == 0) {
+                    if (i % 100 == 0) {
+                        println("reset because hit 100 iterations")
+                        // render most fit image of cycle
+                        mostFitOrganism.step(200000)
+                        mostFitOrganism.express(canvasGraphics)
+                    //    saveCanvasAsImage()
+                    } else {
+                        println("reset because boring")
+                    }
+                    turnsEntropyIsBelowThreshold = 0
+                    maxEntropy = Double.MIN_VALUE
+                    mostFitOrganism = buildOrganism()
+                    organism = mostFitOrganism.clone()
+                    mutationRate = Dice.nextDouble() / 10.0
 
+                } else if (organism.entropy >= maxEntropy) {
+                    println("new most fit organism")
+                    maxEntropy = organism.entropy
+                    mostFitOrganism = organism.clone()
+                    // saveCanvasAsImage()
+                    //val mutationRate = getMutationRate(organism.entropy, maxRate = 0.2) / 4.0
+                    Genetic.mutateDna(organism.dna, probability = mutationRate)
+                } else {
+                    organism = mostFitOrganism.clone() // prep for next iteration
+                 //   val mutationRate = getMutationRate(organism.entropy, maxRate = 0.2) / 4.0
+                    Genetic.mutateDna(organism.dna, probability = mutationRate)
+                }
                 println("$i, ${organism.entropy}, $mutationRate")
-
                 g.drawImage(canvas, 0, 0, width, height, this)
+
+                saveCanvasAsImage()
 
                 i++
             }
@@ -86,7 +113,7 @@ class EvoFuncEvolveEntropy {
             }
 
             private fun saveCanvasAsImage() {
-                val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_$i.png"
+                val fileName = "/tmp/halloween_demo_${System.currentTimeMillis() / 1000}_$i.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 println("saved image to $fileName")
             }
@@ -94,7 +121,7 @@ class EvoFuncEvolveEntropy {
 
         val frame = JFrame()
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.setSize(worldWidth * 3, worldHeight * 3 + 18)
+        frame.setSize(worldWidth * 2, worldHeight * 2 + 18)
         frame.isVisible = true
         frame.add(panel)
         panel.revalidate()
@@ -104,5 +131,7 @@ class EvoFuncEvolveEntropy {
 //            sleep(2000)
         }
     }
+
+    private fun buildOrganism() = Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
 
 }

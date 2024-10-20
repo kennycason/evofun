@@ -1,6 +1,6 @@
 package evofunc.bio
 
-import evofunc.color.Colorizer
+import evofunc.color.ColorFunction
 import evofunc.function.Abs
 import evofunc.function.Deformation
 import evofunc.function.Guassian
@@ -27,12 +27,13 @@ object Genetic {
     fun buildDNA(length: Int): DNA {
         return DNA(
             genes = List(size = length) { randomGene() },
-            colorizer = Colorizer.buildRandomColorizer()
+            colorFunction = ColorFunction.buildRandomColorizer(),
+            geneExpressionOrder = GeneExpressionOrder.SEQUENTIAL_ITERATIVE
         )
     }
 
     private fun randomGene() = Gene(
-        function = getRandomFunction(),
+        function = GeneFunction.entries.random(),
         a = Dice.randomDouble(),
         b = Dice.randomDouble(),
         c = Dice.randomDouble(),
@@ -42,16 +43,19 @@ object Genetic {
     )
 
     fun mutateDna(dna: DNA, probability: Double) {
-        mutateColorizer(dna.colorizer, probability)
+        mutateColorizer(dna.colorFunction, probability)
         for (gene in dna.genes) {
             mutateGene(gene, probability)
+        }
+        if (Dice.nextDouble() < probability / 2) {
+            dna.geneExpressionOrder = GeneExpressionOrder.entries.random()
         }
     }
 
     private fun mutateGene(gene: Gene, probability: Double) {
         gene.function = if (Dice.nextDouble() < probability / 2) {
             // println("mutate function")
-            getRandomFunction()
+            GeneFunction.entries.random()
         } else gene.function
         gene.a = mutateDouble(gene.a, probability, min = -10.0, max = 10.0)
         gene.b = mutateDouble(gene.b, probability, min = -10.0, max = 10.0)
@@ -61,21 +65,24 @@ object Genetic {
         gene.f = mutateDouble(gene.f, probability, min = -10.0, max = 10.0)
     }
 
-    private fun mutateColorizer(colorizer: Colorizer, probability: Double) {
-        colorizer.f1 = mutateDouble(colorizer.f1, probability)
-        colorizer.f2 = mutateDouble(colorizer.f2, probability)
-        colorizer.f3 = mutateDouble(colorizer.f3, probability)
-        colorizer.p1 = mutateDouble(colorizer.p1, probability)
-        colorizer.p2 = mutateDouble(colorizer.p2, probability)
-        colorizer.p3 = mutateDouble(colorizer.p3, probability)
-        colorizer.alpha = max(mutateDouble(colorizer.alpha, probability), 0.5)
+    private fun mutateColorizer(colorFunction: ColorFunction, probability: Double) {
+        colorFunction.function = if (Dice.nextDouble() < probability / 2) {
+            println("mutate color function")
+            ColorFunction.ColorFunction.entries.random()
+        } else colorFunction.function
+        colorFunction.f1 = mutateDouble(colorFunction.f1, probability)
+        colorFunction.f2 = mutateDouble(colorFunction.f2, probability)
+        colorFunction.f3 = mutateDouble(colorFunction.f3, probability)
+        colorFunction.p1 = mutateDouble(colorFunction.p1, probability)
+        colorFunction.p2 = mutateDouble(colorFunction.p2, probability)
+        colorFunction.p3 = mutateDouble(colorFunction.p3, probability)
+        colorFunction.alpha = max(mutateDouble(colorFunction.alpha, probability), 0.5)
     }
 
     private fun mutateDouble(value: Double, probability: Double, min: Double = -1.0, max: Double = 1.0): Double {
         if (Dice.nextDouble() >= probability) return value
 
-        // println("mutate parameter")
-        val newValue =  value + Dice.randomDouble() / 10
+        val newValue = value + Dice.randomDouble() / 10
 
         return if (newValue < min) min
         else if (newValue > max) max
@@ -107,12 +114,15 @@ object Genetic {
             GeneFunction.ROTATE -> Rotate(theta = gene.a, centerX = gene.b, centerY = gene.c)
             GeneFunction.SCALE -> Scale(scaleX = gene.a, scaleY = gene.b)
             GeneFunction.TRANSLATE -> Translate(dx = gene.a, dy = gene.b)
-            GeneFunction.DEFORMATION -> Deformation(frequencyX = gene.a, frequencyY = gene.b, amplitudeX = gene.c, amplitudeY = gene.d, radialEffect = gene.e, noiseFactor = gene.f)
+            GeneFunction.DEFORMATION -> Deformation(
+                frequencyX = gene.a,
+                frequencyY = gene.b,
+                amplitudeX = gene.c,
+                amplitudeY = gene.d,
+                radialEffect = gene.e,
+                noiseFactor = gene.f
+            )
         }
-    }
-
-    private fun getRandomFunction(): GeneFunction {
-        return GeneFunction.entries.toTypedArray().random()
     }
 
     fun clone(dna: DNA): DNA {
@@ -128,17 +138,19 @@ object Genetic {
                     f = it.f
                 )
             },
-            colorizer = Colorizer(
-                f1 = dna.colorizer.f1,
-                f2 = dna.colorizer.f2,
-                f3 = dna.colorizer.f3,
-                p1 = dna.colorizer.p1,
-                p2 = dna.colorizer.p2,
-                p3 = dna.colorizer.p3,
-                center = dna.colorizer.center,
-                width = dna.colorizer.width,
-                alpha = dna.colorizer.alpha,
-            )
+            colorFunction = ColorFunction(
+                function = dna.colorFunction.function,
+                f1 = dna.colorFunction.f1,
+                f2 = dna.colorFunction.f2,
+                f3 = dna.colorFunction.f3,
+                p1 = dna.colorFunction.p1,
+                p2 = dna.colorFunction.p2,
+                p3 = dna.colorFunction.p3,
+                center = dna.colorFunction.center,
+                width = dna.colorFunction.width,
+                alpha = dna.colorFunction.alpha
+            ),
+            geneExpressionOrder = dna.geneExpressionOrder
         )
     }
 

@@ -1,11 +1,12 @@
 package evofunc.bio
 
-import evofunc.color.Colorizer
+import evofunc.color.ColorFunction
 import evofunc.function.PointFunction
 
 data class DNA(
     val genes: List<Gene>,
-    val colorizer: Colorizer
+    val colorFunction: ColorFunction,
+    var geneExpressionOrder: GeneExpressionOrder
 ) {
     val size = genes.size
 }
@@ -19,6 +20,12 @@ data class Gene(
     var function: GeneFunction,
     var a: Double, var b: Double, var c: Double, var d: Double, var e: Double, var f: Double
 )
+
+enum class GeneExpressionOrder {
+    RANDOM,
+    SEQUENTIAL_ITERATIVE,
+//    SEQUENTIAL_ALL
+}
 
 enum class GeneFunction {
     ABS,

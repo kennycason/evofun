@@ -2,6 +2,7 @@ package evofunc
 
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
+import evofunc.image.Entropy
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -24,9 +25,9 @@ class EvoFuncRandomWalkTiled {
     private val saveOutputFrequency = 10
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private val genesCount = 4
+    private val genesCount = 8
     private var organisms = List(9) {
-        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight, Organism.GeneExpressionOrder.SEQUENTIAL_ITERATIVE)
+        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
     }
     private var maxEntropy = Double.MIN_VALUE
 
@@ -69,7 +70,7 @@ class EvoFuncRandomWalkTiled {
 
                 for (organism in organisms) {
                     organism.step(50000)
-                    organism.updateEntropy()
+                    organism.entropy = Entropy.calculateNormalizedEntropy(organism.buffer)
                     organism.express(canvasGraphics)
 
                     if (organism.entropy > maxEntropy) {

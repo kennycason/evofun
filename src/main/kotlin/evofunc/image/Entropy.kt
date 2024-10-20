@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage
 import kotlin.math.ln
 import kotlin.math.log2
 
-object ImageEntropy {
+object Entropy {
     fun calculateNormalizedEntropy(image: BufferedImage): Double {
         val entropy = calculateEntropy(image)
         val totalPixels = image.width * image.height
@@ -47,13 +47,7 @@ object ImageEntropy {
         return histogram
     }
 
-    fun isBoringImage(image: BufferedImage, entropyThreshold: Double = 3.0): Boolean {
-        val entropy = calculateEntropy(image)
-        // println("Image entropy: $entropy")
-        return entropy < entropyThreshold
-    }
-
-    fun calculateEntropy(buffer: Array<Array<Organism.Cell>>): Double {
+    fun calculateNormalizedEntropy(buffer: Array<Array<Organism.Cell>>): Double {
         val flattened = buffer.flatten()
 
         // compute histogram

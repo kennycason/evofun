@@ -2,13 +2,15 @@ package evofunc
 
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
-import evofunc.geometry.Point
 import evofunc.image.Entropy
+import evofunc.random.Dice
+import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
 import java.io.File
+import java.lang.Thread.sleep
 import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -16,20 +18,21 @@ import javax.swing.WindowConstants
 import kotlin.random.Random
 
 fun main(args: Array<String>) {
-    EvoFuncRandomWalk().run()
+    EvoFuncHalloweenParty2().run()
 }
 
-class EvoFuncRandomWalk {
+class EvoFuncHalloweenParty2 {
     // 16:9 512x288
-    private val worldWidth = 512
-    private val worldHeight = 512
-    private val saveOutput = true
-    private val saveOutputFrequency = 10
+    private val worldWidth = 640
+    private val worldHeight = 360
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private val genesCount = 25
-    private var organism =
-        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
+    private val genesCount = 10
+    private var organism = buildOrganism()
+    private var turnsEntropyIsBelowThreshold = 0
+    private var turnsSinceEntropyAboveThreshold = 0
+    private var mutationRate = 0.05
+    private val saveImage = true
 
     fun run() {
         var i = 0
@@ -46,7 +49,7 @@ class EvoFuncRandomWalk {
                         }
                         if (e.keyCode == KeyEvent.VK_N) {
                             println("new dna")
-                            organism.dna = Genetic.buildDNA(3 + Random.nextInt(5))
+                            organism = buildOrganism()
                         }
                     }
                 })
@@ -55,23 +58,38 @@ class EvoFuncRandomWalk {
             override fun paintComponent(g: Graphics) {
                 super.paintComponent(g)
 
+                canvasGraphics.color = Color.BLACK
+                canvasGraphics.clearRect(0, 0, width, height)
+
+                //println(organism.dna)
                 organism.step(1000000)
                 organism.express(canvasGraphics)
-               // println(organism.dna)
+                organism.entropy = Entropy.calculateNormalizedEntropy(canvas)
 
-                val normalizedEntropy = Entropy.calculateNormalizedEntropy(canvas)
-                if (normalizedEntropy < 0.05) {
-                    Genetic.mutateDna(organism.dna, probability = 0.2)
+                if (organism.entropy <= 0.05) {
+                    turnsEntropyIsBelowThreshold++
+                    turnsSinceEntropyAboveThreshold = 0
                 } else {
-                    Genetic.mutateDna(organism.dna, probability = 0.2)
+                    turnsEntropyIsBelowThreshold = 0
+                    turnsSinceEntropyAboveThreshold++
                 }
 
-                if (saveOutput && (i > 0 && (i % saveOutputFrequency == 0))) {
-                    saveCanvasAsImage()
+                if (turnsEntropyIsBelowThreshold > 2) {
+                    println("reset because boring")
+                    Genetic.mutateDna(organism.dna, probability = 0.5)
+                    organism.reset()
+                } else if (turnsSinceEntropyAboveThreshold >= 50) {
+                    println("reset because pattern hit 75 iterations")
+                    Genetic.mutateDna(organism.dna, probability = 0.5)
+                    organism.reset()
+                } else {
+                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.03)
+                    Genetic.mutateDna(organism.dna, probability = mutationRate)
                 }
 
+                println("$i, ${organism.entropy}, $mutationRate")
                 g.drawImage(canvas, 0, 0, width, height, this)
-
+                if (saveImage) saveCanvasAsImage()
                 i++
             }
 
@@ -82,13 +100,11 @@ class EvoFuncRandomWalk {
              *
              */
             private fun getMutationRate(normalizedEntropy: Double, minRate: Double = 0.01, maxRate: Double = 1.0): Double {
-                val mutationRate = minRate + (1.0 - normalizedEntropy) * (maxRate - minRate)
-                //println("entropy: $normalizedEntropy, mutation: $mutationRate")
-                return mutationRate
+                return minRate + ((1.0 - normalizedEntropy) * (maxRate - minRate) / 10.0)
             }
 
             private fun saveCanvasAsImage() {
-                val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_$i.png"
+                val fileName = "/tmp/halloween_demo_${System.currentTimeMillis() / 1000}_$i.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 println("saved image to $fileName")
             }
@@ -96,21 +112,18 @@ class EvoFuncRandomWalk {
 
         val frame = JFrame()
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.setSize(worldWidth * 3, worldHeight * 3 + 18)
+        frame.setSize(worldWidth * 2, worldHeight * 2 + 18)
         frame.isVisible = true
         frame.add(panel)
         panel.revalidate()
 
         while (true) {
             panel.repaint()
-//            sleep(2000)
+            sleep(20)
         }
     }
 
-    fun squashPoint(point: Point, targetWidth: Int, targetHeight: Int, originalMax: Int): Point {
-        val scaledX = (point.x / originalMax.toDouble()) * targetWidth
-        val scaledY = (point.y / originalMax.toDouble()) * targetHeight
-        return Point(scaledX, scaledY)
-    }
+    private fun buildOrganism() =
+        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
 
 }
