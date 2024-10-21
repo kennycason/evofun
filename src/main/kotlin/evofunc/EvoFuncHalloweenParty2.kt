@@ -27,7 +27,7 @@ class EvoFuncHalloweenParty2 {
     private val worldHeight = 360
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private val genesCount = 10
+    private val genesCount = 15
     private var organism = buildOrganism()
     private var turnsEntropyIsBelowThreshold = 0
     private var turnsSinceEntropyAboveThreshold = 0
