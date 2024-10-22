@@ -14,6 +14,9 @@ Render a constantly evolving set of composed functions. Color algorithm mutates 
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229357_1980.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229465_2430.png" width="50%"/>
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229879_4040.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729232157_760.png" width="50%"/>
 
+## Videos
+
+- https://www.youtube.com/watch?v=bDJs5xCmJcs
 
 ## Images to Video
 
