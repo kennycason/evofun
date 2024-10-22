@@ -36,9 +36,9 @@ class Organism(
         var skipped = 0
         (0 until steps).forEach { step ->
             val point = when (dna.geneExpressionOrder) {
-                GeneExpressionOrder.RANDOM -> expressedDna.expressed[Dice.nextInt(dna.size)].apply(Point(x, y))
-                GeneExpressionOrder.SEQUENTIAL_ITERATIVE -> expressedDna.expressed[step % dna.size].apply(Point(x, y))
-//                GeneExpressionOrder.SEQUENTIAL_ALL -> expressedDna.expressed.fold(Point(x, y)) { p, gene -> gene.apply(p) }
+                DNA.GeneExpressionOrder.RANDOM -> expressedDna.expressed[Dice.nextInt(dna.size)].apply(Point(x, y))
+                DNA.GeneExpressionOrder.SEQUENTIAL_ITERATIVE -> expressedDna.expressed[step % dna.size].apply(Point(x, y))
+//                DNA.GeneExpressionOrder.SEQUENTIAL_ALL -> expressedDna.expressed.fold(Point(x, y)) { p, gene -> gene.apply(p) }
             }
             x = point.x
             y = point.y
@@ -57,9 +57,11 @@ class Organism(
     }
 
     fun express(canvasGraphics: Graphics) {
+        val expressedDna = Genetic.express(dna)
+
         (0 until width).forEach { x ->
             (0 until height).forEach { y ->
-                canvasGraphics.color = dna.colorFunction.apply(x, y, buffer, maxCount)
+                canvasGraphics.color = expressedDna.colorFunction.apply(x, y, buffer, maxCount)
                 canvasGraphics.fillRect(position.x.toInt() + x, position.y.toInt() + y, 1, 1)
             }
         }

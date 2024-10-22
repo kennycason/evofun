@@ -1,4 +1,4 @@
-package evofunc.function
+package evofunc.function2d
 
 import evofunc.geometry.Point
 import evofunc.random.Dice
@@ -8,7 +8,7 @@ import kotlin.math.sin
 data class Pdj(
     val a: Double = Dice.randomDouble(), val b: Double = Dice.randomDouble(),
     val c: Double = Dice.randomDouble(), val d: Double = Dice.randomDouble()
-) : PointFunction {
+) : Function2D {
     override fun apply(p: Point): Point {
         return Point(sin(a * p.y) - cos(b * p.x), sin(c * p.x) - cos(d * p.y))
     }

@@ -1,4 +1,4 @@
-package evofunc.function
+package evofunc.function2d
 
 import evofunc.geometry.Point
 import evofunc.random.Dice
@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 data class Spiral(
     private val a: Double = Dice.randomDouble(), private val b: Double = Dice.randomDouble(),
     private val c: Double = Dice.randomDouble(), private val d: Double = Dice.randomDouble()
-) : PointFunction {
+) : Function2D {
     override fun apply(p: Point): Point {
         // convert to polar coordinates
         val r = sqrt(p.x * p.x + p.y * p.y)

@@ -1,5 +1,6 @@
 package evofunc
 
+import evofunc.bio.DNA
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
 import evofunc.image.Entropy
@@ -80,7 +81,7 @@ class EvoFuncHalloweenParty2 {
                 organism.express(canvasGraphics)
                 organism.entropy = Entropy.calculateNormalizedEntropy(canvas)
 
-                if (organism.entropy <= 0.03) {
+                if (organism.entropy <= 0.015) {
                     turnsEntropyIsBelowThreshold++
                     turnsSinceEntropyAboveThreshold = 0
                 } else {
@@ -88,16 +89,16 @@ class EvoFuncHalloweenParty2 {
                     turnsSinceEntropyAboveThreshold++
                 }
 
-                if (turnsEntropyIsBelowThreshold > 2) {
+                if (turnsEntropyIsBelowThreshold > 5) {
                     println("reset because boring")
                     Genetic.mutateDna(organism.dna, probability = 0.5)
                     organism.reset()
-                } else if (turnsSinceEntropyAboveThreshold >= 75) {
-                    println("reset because pattern hit 75 iterations")
+                } else if (turnsSinceEntropyAboveThreshold >= 50) {
+                    println("reset because pattern hit 50 iterations")
                     Genetic.mutateDna(organism.dna, probability = 0.5)
                     organism.reset()
                 } else {
-                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.04)
+                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.05)
                     Genetic.mutateDna(organism.dna, probability = mutationRate)
                 }
 
@@ -141,7 +142,6 @@ class EvoFuncHalloweenParty2 {
         }
     }
 
-    private fun buildOrganism() =
-        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
+    private fun buildOrganism(dna: DNA = Genetic.buildDNA(genesCount)) = Organism(dna = dna, worldWidth, worldHeight)
 
 }

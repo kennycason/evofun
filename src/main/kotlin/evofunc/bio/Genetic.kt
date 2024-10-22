@@ -1,25 +1,26 @@
 package evofunc.bio
 
 import evofunc.color.ColorFunction
-import evofunc.function.Abs
-import evofunc.function.Deformation
-import evofunc.function.Guassian
-import evofunc.function.Horseshoe
-import evofunc.function.Parabola
-import evofunc.function.Pdj
-import evofunc.function.PointFunction
-import evofunc.function.Popcorn
-import evofunc.function.Rotate
-import evofunc.function.Scale
-import evofunc.function.SinCos
-import evofunc.function.SinSin
-import evofunc.function.Spherical
-import evofunc.function.Spiral
-import evofunc.function.Squared
-import evofunc.function.Swirl
-import evofunc.function.Translate
+import evofunc.color.DefaultColorFunction
+import evofunc.color.WeightedRGBColorFunction
+import evofunc.function2d.Abs
+import evofunc.function2d.Deformation
+import evofunc.function2d.Guassian
+import evofunc.function2d.Horseshoe
+import evofunc.function2d.Parabola
+import evofunc.function2d.Pdj
+import evofunc.function2d.Function2D
+import evofunc.function2d.Popcorn
+import evofunc.function2d.Rotate
+import evofunc.function2d.Scale
+import evofunc.function2d.SinCos
+import evofunc.function2d.SinSin
+import evofunc.function2d.Spherical
+import evofunc.function2d.Spiral
+import evofunc.function2d.Squared
+import evofunc.function2d.Swirl
+import evofunc.function2d.Translate
 import evofunc.random.Dice
-import kotlin.math.max
 
 
 object Genetic {
@@ -27,13 +28,21 @@ object Genetic {
     fun buildDNA(length: Int): DNA {
         return DNA(
             genes = List(size = length) { randomGene() },
-            colorFunction = ColorFunction.buildRandomColorizer(),
-            geneExpressionOrder = GeneExpressionOrder.SEQUENTIAL_ITERATIVE
+            colorGene = buildRandomColorGene(),
+            geneExpressionOrder = DNA.GeneExpressionOrder.SEQUENTIAL_ITERATIVE
         )
     }
 
-    private fun randomGene() = Gene(
-        function = GeneFunction.entries.random(),
+    private fun buildRandomColorGene(): DNA.ColorGene {
+        return DNA.ColorGene(
+            algorithm = DNA.ColorGene.ColorAlgorithm.FUNCTIONS, // DNA.ColorGene.ColorAlgorithm.entries.random(),
+            genes = List(size = 3) { randomGene() },
+            alpha = Dice.nextDouble()
+        )
+    }
+
+    private fun randomGene() = DNA.Gene(
+        function = DNA.GeneFunction.entries.random(),
         a = Dice.randomDouble(),
         b = Dice.randomDouble(),
         c = Dice.randomDouble(),
@@ -43,41 +52,39 @@ object Genetic {
     )
 
     fun mutateDna(dna: DNA, probability: Double) {
-        mutateColorizer(dna.colorFunction, probability)
+        mutateColorGene(dna.colorGene, probability)
         for (gene in dna.genes) {
-            mutateGene(gene, probability)
+            mutateGene(gene, probability, min = -1.0, max = 1.0)
         }
         if (Dice.nextDouble() < probability / 2) {
-            dna.geneExpressionOrder = GeneExpressionOrder.entries.random()
+            dna.geneExpressionOrder = DNA.GeneExpressionOrder.entries.random()
         }
     }
 
-    private fun mutateGene(gene: Gene, probability: Double) {
-        gene.function = if (Dice.nextDouble() < probability / 2) {
+    private fun mutateGene(gene: DNA.Gene, probability: Double, min: Double = -1.0, max: Double = 1.0) {
+        gene.function = if (Dice.nextDouble() < probability) {
             // println("mutate function")
-            GeneFunction.entries.random()
+            DNA.GeneFunction.entries.random()
         } else gene.function
-        gene.a = mutateDouble(gene.a, probability, min = -10.0, max = 10.0)
-        gene.b = mutateDouble(gene.b, probability, min = -10.0, max = 10.0)
-        gene.c = mutateDouble(gene.c, probability, min = -10.0, max = 10.0)
-        gene.d = mutateDouble(gene.d, probability, min = -10.0, max = 10.0)
-        gene.e = mutateDouble(gene.e, probability, min = -10.0, max = 10.0)
-        gene.f = mutateDouble(gene.f, probability, min = -10.0, max = 10.0)
+        gene.a = mutateDouble(gene.a, probability, min = min, max = max)
+        gene.b = mutateDouble(gene.b, probability, min = min, max = max)
+        gene.c = mutateDouble(gene.c, probability, min = min, max = max)
+        gene.d = mutateDouble(gene.d, probability, min = min, max = max)
+        gene.e = mutateDouble(gene.e, probability, min = min, max = max)
+        gene.f = mutateDouble(gene.f, probability, min = min, max = max)
     }
 
-    private fun mutateColorizer(colorFunction: ColorFunction, probability: Double) {
-        colorFunction.function = if (Dice.nextDouble() < probability / 2) {
-            println("mutate color function")
-            ColorFunction.ColorFunction.entries.random()
-        } else colorFunction.function
-        colorFunction.f1 = mutateDouble(colorFunction.f1, probability)
-        colorFunction.f2 = mutateDouble(colorFunction.f2, probability)
-        colorFunction.f3 = mutateDouble(colorFunction.f3, probability)
-        colorFunction.p1 = mutateDouble(colorFunction.p1, probability)
-        colorFunction.p2 = mutateDouble(colorFunction.p2, probability)
-        colorFunction.p3 = mutateDouble(colorFunction.p3, probability)
-        colorFunction.alpha = max(mutateDouble(colorFunction.alpha, probability), 0.5)
+    private fun mutateColorGene(colorGene: DNA.ColorGene, probability: Double) {
+        colorGene.algorithm = if (Dice.nextDouble() < probability) {
+            println("mutate color algorithm")
+            DNA.ColorGene.ColorAlgorithm.entries.random()
+        } else colorGene.algorithm
+        colorGene.genes.forEach {
+            mutateGene(it, probability * 2, min = -1.0, max = 1.0)
+        }
+        colorGene.alpha = mutateDouble(colorGene.alpha, probability, min = 0.5, max = 1.0)
     }
+
 
     private fun mutateDouble(value: Double, probability: Double, min: Double = -1.0, max: Double = 1.0): Double {
         if (Dice.nextDouble() >= probability) return value
@@ -92,29 +99,34 @@ object Genetic {
     fun express(dna: DNA): ExpressedDNA {
         return ExpressedDNA(
             dna = dna,
-            expressed = dna.genes.map(::expressGene)
+            expressed = expressGenes(dna.genes),
+            colorFunction = expressColorFunction(dna)
         )
     }
 
-    private fun expressGene(gene: Gene): PointFunction {
-        return when (gene.function) {
-            GeneFunction.ABS -> Abs(a = gene.a, b = gene.b)
-            GeneFunction.GUASSIAN -> Guassian(x0 = gene.a, y0 = gene.b, sigmaX = gene.c, sigmaY = gene.d, amplitude = gene.e)
-            GeneFunction.HORSESHOE -> Horseshoe(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
-            GeneFunction.PARABOLA -> Parabola(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
-            GeneFunction.PDJ -> Pdj(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
-            GeneFunction.POPCORN -> Popcorn(a = gene.a, b = gene.b)
-            GeneFunction.SIN_COS -> SinCos(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
-            GeneFunction.SIN_SIN -> SinSin(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
-            GeneFunction.SPHERICAL -> Spherical(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
-            GeneFunction.SPIRAL -> Spiral(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
-            GeneFunction.SQUARED -> Squared(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
-            GeneFunction.SWIRL -> Swirl(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+    fun expressGenes(genes: List<DNA.Gene>): List<Function2D> {
+        return genes.map(::expressGene)
+    }
 
-            GeneFunction.ROTATE -> Rotate(theta = gene.a, centerX = gene.b, centerY = gene.c)
-            GeneFunction.SCALE -> Scale(scaleX = gene.a, scaleY = gene.b)
-            GeneFunction.TRANSLATE -> Translate(dx = gene.a, dy = gene.b)
-            GeneFunction.DEFORMATION -> Deformation(
+    private fun expressGene(gene: DNA.Gene): Function2D {
+        return when (gene.function) {
+            DNA.GeneFunction.ABS -> Abs(a = gene.a, b = gene.b)
+            DNA.GeneFunction.GUASSIAN -> Guassian(x0 = gene.a, y0 = gene.b, sigmaX = gene.c, sigmaY = gene.d, amplitude = gene.e)
+            DNA.GeneFunction.HORSESHOE -> Horseshoe(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            DNA.GeneFunction.PARABOLA -> Parabola(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+            DNA.GeneFunction.PDJ -> Pdj(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            DNA.GeneFunction.POPCORN -> Popcorn(a = gene.a, b = gene.b)
+            DNA.GeneFunction.SIN_COS -> SinCos(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+            DNA.GeneFunction.SIN_SIN -> SinSin(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+            DNA.GeneFunction.SPHERICAL -> Spherical(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            DNA.GeneFunction.SPIRAL -> Spiral(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            DNA.GeneFunction.SQUARED -> Squared(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+            DNA.GeneFunction.SWIRL -> Swirl(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+
+            DNA.GeneFunction.ROTATE -> Rotate(theta = gene.a, centerX = gene.b, centerY = gene.c)
+            DNA.GeneFunction.SCALE -> Scale(scaleX = gene.a, scaleY = gene.b)
+            DNA.GeneFunction.TRANSLATE -> Translate(dx = gene.a, dy = gene.b)
+            DNA.GeneFunction.DEFORMATION -> Deformation(
                 frequencyX = gene.a,
                 frequencyY = gene.b,
                 amplitudeX = gene.c,
@@ -125,10 +137,27 @@ object Genetic {
         }
     }
 
+    private fun expressColorFunction(dna: DNA): ColorFunction {
+        return when (dna.colorGene.algorithm) {
+            DNA.ColorGene.ColorAlgorithm.DEFAULT -> DefaultColorFunction(
+                f1 = dna.colorGene.genes.first().a,
+                f2 = dna.colorGene.genes.first().b,
+                f3 = dna.colorGene.genes.first().c,
+                p1 = dna.colorGene.genes.first().d,
+                p2 = dna.colorGene.genes.first().e,
+                p3 = dna.colorGene.genes.first().f,
+                center = 128,
+                width = 127,
+                alpha = dna.colorGene.alpha
+            )
+            DNA.ColorGene.ColorAlgorithm.FUNCTIONS -> WeightedRGBColorFunction(gene = dna.colorGene)
+        }
+    }
+
     fun clone(dna: DNA): DNA {
         return DNA(
             genes = dna.genes.map {
-                Gene(
+                DNA.Gene(
                     function = it.function,
                     a = it.a,
                     b = it.b,
@@ -138,17 +167,20 @@ object Genetic {
                     f = it.f
                 )
             },
-            colorFunction = ColorFunction(
-                function = dna.colorFunction.function,
-                f1 = dna.colorFunction.f1,
-                f2 = dna.colorFunction.f2,
-                f3 = dna.colorFunction.f3,
-                p1 = dna.colorFunction.p1,
-                p2 = dna.colorFunction.p2,
-                p3 = dna.colorFunction.p3,
-                center = dna.colorFunction.center,
-                width = dna.colorFunction.width,
-                alpha = dna.colorFunction.alpha
+            colorGene = DNA.ColorGene(
+                algorithm = dna.colorGene.algorithm,
+                genes = dna.genes.map {
+                    DNA.Gene(
+                        function = it.function,
+                        a = it.a,
+                        b = it.b,
+                        c = it.c,
+                        d = it.d,
+                        e = it.e,
+                        f = it.f
+                    )
+                },
+                alpha = dna.colorGene.alpha
             ),
             geneExpressionOrder = dna.geneExpressionOrder
         )

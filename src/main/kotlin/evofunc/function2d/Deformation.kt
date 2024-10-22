@@ -1,4 +1,4 @@
-package evofunc.function
+package evofunc.function2d
 
 import evofunc.geometry.Point
 import evofunc.random.Dice
@@ -14,7 +14,7 @@ data class Deformation(
     private val amplitudeY: Double = Dice.randomDouble(),
     private val radialEffect: Double = Dice.randomDouble(),
     private val noiseFactor: Double = Dice.randomDouble()
-) : PointFunction {
+) : Function2D {
 
     override fun apply(p: Point) = Point(
         deformX(p),

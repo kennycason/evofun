@@ -1,12 +1,10 @@
-package evofunc.function
+package evofunc.function2d
 
 import evofunc.geometry.Point
 import evofunc.random.Dice
 import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
 
-class Abs(val a: Double = Dice.randomDouble(), val b: Double = Dice.randomDouble()) : PointFunction {
+class Abs(val a: Double = Dice.randomDouble(), val b: Double = Dice.randomDouble()) : Function2D {
     override fun apply(p: Point): Point {
         return Point(abs(p.x) + a, abs(p.y) + b)
     }
