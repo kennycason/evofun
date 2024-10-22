@@ -3,6 +3,7 @@ package evofunc
 import evofunc.bio.Genetic
 import evofunc.bio.Organism
 import evofunc.image.Entropy
+import evofunc.image.ImageToGrayScaleBuffer
 import evofunc.random.Dice
 import java.awt.Color
 import java.awt.Graphics
@@ -25,6 +26,12 @@ class EvoFuncHalloweenParty2 {
     // 16:9 512x288
     private val worldWidth = 640
     private val worldHeight = 360
+//    private val worldWidth = 1920
+//    private val worldHeight = 1080
+//    private val targetImageFileName = "starry_night.png"
+//    private var targetImage: BufferedImage = ImageIO.read(Thread.currentThread().contextClassLoader.getResource(targetImageFileName))
+//    private val worldWidth = targetImage.width
+//    private val worldHeight = targetImage.height
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
     private val genesCount = 15
@@ -33,6 +40,11 @@ class EvoFuncHalloweenParty2 {
     private var turnsSinceEntropyAboveThreshold = 0
     private var mutationRate = 0.05
     private val saveImage = true
+    private val imageFolderBase = "/tmp/${System.currentTimeMillis() / 1000}/"
+
+    init {
+        println("organism folder: $imageFolderBase")
+    }
 
     fun run() {
         var i = 0
@@ -63,10 +75,12 @@ class EvoFuncHalloweenParty2 {
 
                 //println(organism.dna)
                 organism.step(1000000)
+//                ImageToGrayScaleBuffer.addToBuffer(targetImage, 0.4, organism.buffer)
+
                 organism.express(canvasGraphics)
                 organism.entropy = Entropy.calculateNormalizedEntropy(canvas)
 
-                if (organism.entropy <= 0.05) {
+                if (organism.entropy <= 0.03) {
                     turnsEntropyIsBelowThreshold++
                     turnsSinceEntropyAboveThreshold = 0
                 } else {
@@ -78,12 +92,12 @@ class EvoFuncHalloweenParty2 {
                     println("reset because boring")
                     Genetic.mutateDna(organism.dna, probability = 0.5)
                     organism.reset()
-                } else if (turnsSinceEntropyAboveThreshold >= 50) {
+                } else if (turnsSinceEntropyAboveThreshold >= 75) {
                     println("reset because pattern hit 75 iterations")
                     Genetic.mutateDna(organism.dna, probability = 0.5)
                     organism.reset()
                 } else {
-                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.03)
+                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.04)
                     Genetic.mutateDna(organism.dna, probability = mutationRate)
                 }
 
@@ -104,22 +118,26 @@ class EvoFuncHalloweenParty2 {
             }
 
             private fun saveCanvasAsImage() {
-                val fileName = "/tmp/halloween_demo_${System.currentTimeMillis() / 1000}_$i.png"
+                val file = File(imageFolderBase)
+                if (!file.exists()) {
+                    file.mkdirs()  // Create the directory if it does not exist
+                }
+                val fileName = "$imageFolderBase$i.png"
                 ImageIO.write(canvas, "png", File(fileName))
-                println("saved image to $fileName")
+                // println("saved image to $fileName")
             }
         }
 
         val frame = JFrame()
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.setSize(worldWidth * 2, worldHeight * 2 + 18)
+        frame.setSize(worldWidth, worldHeight + 18)
         frame.isVisible = true
         frame.add(panel)
         panel.revalidate()
 
         while (true) {
             panel.repaint()
-            sleep(20)
+//            sleep(20)
         }
     }
 

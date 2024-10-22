@@ -2,7 +2,6 @@
 
 Render a constantly evolving set of composed functions. Color algorithm mutates alongside functions and function parameters.
 
-
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728715656_0.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728722276_200.png" width="50%"/>
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728722000_2200.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728721472_0.png" width="50%"/>
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728718403_100.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1728722420_100.png" width="50%"/>
@@ -14,3 +13,8 @@ Render a constantly evolving set of composed functions. Color algorithm mutates 
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729226408_6939.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729228963_190.png" width="50%"/>
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229357_1980.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229465_2430.png" width="50%"/>
 <img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729229879_4040.png" width="50%"/><img src="https://raw.githubusercontent.com/kennycason/evofunc/refs/heads/main/samples/iteration_1729232157_760.png" width="50%"/>
+
+
+## Images to Video
+
+`ffmpeg -framerate 8 -pattern_type glob -i "*.png" -vf "scale=1280:720,fps=8" -c:v libx264 -b:v 5000k -crf 16 -pix_fmt yuv420p functions.mp4`
