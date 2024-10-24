@@ -1,11 +1,13 @@
 package evofun.bio
 
 import evofun.bio.serialize.DNASerializer
+import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
 import kotlin.random.Random
 
 class DNAFarm(
-    private val rooLocation: File = File(System.getProperty("user.home"), ".evofun")
+    private val rooLocation: File = File(System.getProperty("user.home"), "evofun")
 ) {
     private val dnaLocation = File(rooLocation, "dna")
 
@@ -13,33 +15,33 @@ class DNAFarm(
         initIfNeeded()
     }
 
-    fun writeDNA(dna: DNA) {
+    fun writeDNA(dna: DNA, canvas: BufferedImage) {
+        val dnaHash = DNAHasher.sha256Hash(dna)
+        val jsonFileName = "$dnaHash.json"
         val dnaJsonString = DNASerializer.serialize(dna)
-        val fileName = "${DNAHasher.sha256Hash(dna)}.json"
-        val dnaFile = File(dnaLocation, fileName)
+        val dnaFile = File(dnaLocation, jsonFileName)
         dnaFile.writeText(dnaJsonString)
         println("DNA saved to $dnaFile")
+
+        val expressedDNAFile = File(dnaLocation, "$dnaHash.png")
+        ImageIO.write(canvas, "png", expressedDNAFile)
+        println("DNA image saved to $expressedDNAFile")
     }
 
     fun readRandomDNA(): DNA? {
-        // List all JSON files in the dnaLocation directory
         val dnaFiles = dnaLocation.listFiles { file -> file.extension == "json" } ?: return null
 
-        // Ensure there are files to read from
         if (dnaFiles.isEmpty()) {
             println("No DNA files found in the directory.")
             return null
         }
 
-        // Select a random file from the list
         val randomFile = dnaFiles[Random.nextInt(dnaFiles.size)]
         println("Reading DNA from file: ${randomFile.name}")
 
-        // Read the file content and deserialize it into a DNA object
         val dnaJsonString = randomFile.readText()
         return DNASerializer.deserialize(dnaJsonString)
     }
-
 
     private fun initIfNeeded() {
         if (!rooLocation.exists()) {

@@ -1,7 +1,9 @@
 package evofun.bio
 
 import evofun.color.ColorFunction
+import evofun.color.CosmicPulseColorFunction
 import evofun.color.DefaultColorFunction
+import evofun.color.NeonColorFunction
 import evofun.color.WeightedRGBColorFunction
 import evofun.function2d.Abs
 import evofun.function2d.Deformation
@@ -60,7 +62,7 @@ object Genetic {
         }
     }
 
-    private fun mutateGene(gene: DNA.Gene, probability: Double, min: Double = -1.0, max: Double = 1.0) {
+    private fun mutateGene(gene: DNA.Gene, probability: Double, min: Double = -10.0, max: Double = 10.0) {
         gene.function = if (Dice.nextDouble() < probability) {
             // println("mutate function")
             DNA.GeneFunction.entries.random()
@@ -79,7 +81,7 @@ object Genetic {
             DNA.ColorGene.ColorAlgorithm.entries.random()
         } else colorGene.algorithm
         colorGene.genes.forEach {
-            mutateGene(it, probability * 2, min = -1.0, max = 1.0)
+            mutateGene(it, probability * 2, min = -10.0, max = 10.0)
         }
         colorGene.alpha = mutateDouble(colorGene.alpha, probability, min = 0.5, max = 1.0)
     }
@@ -148,6 +150,26 @@ object Genetic {
                 alpha = dna.colorGene.alpha
             )
             DNA.ColorGene.ColorAlgorithm.FUNCTIONS -> WeightedRGBColorFunction(gene = dna.colorGene)
+            DNA.ColorGene.ColorAlgorithm.NEON -> NeonColorFunction(
+                f1 = dna.colorGene.genes.first().a,
+                f2 = dna.colorGene.genes.first().b,
+                f3 = dna.colorGene.genes.first().c,
+                p1 = dna.colorGene.genes.first().d,
+                p2 = dna.colorGene.genes.first().e,
+                p3 = dna.colorGene.genes.first().f,
+                intensity = dna.colorGene.genes[1].a * 5.0,
+                alpha = dna.colorGene.alpha
+            )
+            DNA.ColorGene.ColorAlgorithm.COSMIC_PULSE -> CosmicPulseColorFunction(
+                rFrequency = dna.colorGene.genes.first().a,
+                gFrequency = dna.colorGene.genes.first().a,
+                bFrequency = dna.colorGene.genes.first().a,
+                rPhase = dna.colorGene.genes.first().a,
+                gPhase = dna.colorGene.genes.first().a,
+                bPhase = dna.colorGene.genes.first().a,
+                brightness = dna.colorGene.genes[1].a * 2,
+                alpha = dna.colorGene.alpha
+            )
         }
     }
 

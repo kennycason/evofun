@@ -6,12 +6,12 @@ import kotlin.math.sin
 
 data class DefaultColorFunction(
     var algorithm: Algorithm = Algorithm.DEFAULT,
-    var f1: Double = 0.3,
-    var f2: Double = 0.3,
-    var f3: Double = 0.3,
-    var p1: Double = 0.0,
-    var p2: Double = 0.0,
-    var p3: Double = 0.0,
+    var f1: Double = 0.4,  // frequency for Red
+    var f2: Double = 0.3,  // frequency for Green
+    var f3: Double = 0.2,  // frequency for Blue
+    var p1: Double = 0.0,  // phase shift for Red
+    var p2: Double = 0.0,  // phase shift for Green
+    var p3: Double = 0.0,  // phase shift for Blue
     var center: Int = 128,
     var width: Int = 127,
     var alpha: Double = 1.0

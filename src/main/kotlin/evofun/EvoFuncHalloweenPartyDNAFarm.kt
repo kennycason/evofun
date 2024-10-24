@@ -38,7 +38,7 @@ class EvoFuncHalloweenPartyDNAFarm {
     private val saveImage = false
     private val imageFolderBase = "/tmp/evofunc_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
-    private val genesCount = 50
+    private val maxGeneCount = 50
     private var organism = buildOrganism()
 
     fun run() {
@@ -60,7 +60,7 @@ class EvoFuncHalloweenPartyDNAFarm {
                         }
                         if (e.keyCode == KeyEvent.VK_S) {
                             println("save dna")
-                            dnaFarm.writeDNA(organism.dna)
+                            dnaFarm.writeDNA(organism.dna, canvas)
                         }
                     }
                 })
@@ -141,7 +141,7 @@ class EvoFuncHalloweenPartyDNAFarm {
 
     private fun buildOrganism(): Organism {
         val dnaFormFarm = dnaFarm.readRandomDNA()
-        dnaFormFarm ?: return Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
+        dnaFormFarm ?: return Organism(dna = Genetic.buildDNA(Dice.nextInt(maxGeneCount) + 1), worldWidth, worldHeight)
         println("read dna from farm")
         return Organism(dna = dnaFormFarm, worldWidth, worldHeight)
     }

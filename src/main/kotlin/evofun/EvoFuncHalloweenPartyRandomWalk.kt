@@ -24,8 +24,8 @@ fun main(args: Array<String>) {
 
 class EvoFuncHalloweenPartyRandomWalk {
     // 16:9 512x288
-    private val worldWidth = 640
-    private val worldHeight = 360
+    private val worldWidth = 640 * 1
+    private val worldHeight = 360 * 1
 //    private val worldWidth = 1920
 //    private val worldHeight = 1080
 //    private val targetImageFileName = "starry_night.png"
@@ -39,7 +39,7 @@ class EvoFuncHalloweenPartyRandomWalk {
     private var turnsEntropyIsBelowThreshold = 0
     private var turnsSinceEntropyAboveThreshold = 0
     private var mutationRate = 0.05
-    private val saveImage = false
+    private val saveImage = true
     private val imageFolderBase = "/tmp/evofunc_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
    // private val beatDetector = BeatDetector()
@@ -77,7 +77,7 @@ class EvoFuncHalloweenPartyRandomWalk {
                         }
                         if (e.keyCode == KeyEvent.VK_S) {
                             println("save dna")
-                            dnaFarm.writeDNA(organism.dna)
+                            dnaFarm.writeDNA(organism.dna, canvas)
                         }
                     }
                 })
@@ -119,7 +119,7 @@ class EvoFuncHalloweenPartyRandomWalk {
                 g.drawImage(canvas, 0, 0, width, height, this)
                 if (saveImage) saveCanvasAsImage()
                 i++
-                // println(organism.dna)
+//                println(organism.dna)
             }
 
             /*
@@ -141,6 +141,7 @@ class EvoFuncHalloweenPartyRandomWalk {
                 ImageIO.write(canvas, "png", File(fileName))
                 // println("saved image to $fileName")
             }
+
         }
 
         val frame = JFrame()

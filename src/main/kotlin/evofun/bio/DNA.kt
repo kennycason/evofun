@@ -50,7 +50,9 @@ data class DNA(
     ) {
         enum class ColorAlgorithm {
             DEFAULT,
-            FUNCTIONS
+            FUNCTIONS,
+            NEON,
+            COSMIC_PULSE
         }
     }
 
