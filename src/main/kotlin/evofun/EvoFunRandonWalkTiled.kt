@@ -2,7 +2,6 @@ package evofun
 
 import evofun.bio.Genetic
 import evofun.bio.Organism
-import evofun.geometry.Point
 import evofun.image.Entropy
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
@@ -13,23 +12,41 @@ import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.WindowConstants
-import kotlin.random.Random
 
 fun main(args: Array<String>) {
-    evofun.EvoFuncRandomWalk().run()
+    EvoFunRandomWalkTiled().run()
 }
 
-class EvoFuncRandomWalk {
+class EvoFunRandomWalkTiled {
     // 16:9 512x288
-    private val worldWidth = 512
-    private val worldHeight = 512
+    private val worldWidth = 300
+    private val worldHeight = 300
     private val saveOutput = true
     private val saveOutputFrequency = 10
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private val genesCount = 25
-    private var organism =
+    private val genesCount = 8
+    private var organisms = List(9) {
         Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
+    }
+    private var maxEntropy = Double.MIN_VALUE
+
+    init {
+        val gridSize = 3
+        val cellWidth = worldWidth / gridSize
+        val cellHeight = worldHeight / gridSize
+
+        organisms.forEachIndexed { index, organism ->
+            val row = index / gridSize
+            val col = index % gridSize
+
+            val x = col * cellWidth
+            val y = row * cellHeight
+
+            organism.position.x = x.toDouble()
+            organism.position.y = y.toDouble()
+        }
+    }
 
     fun run() {
         var i = 0
@@ -44,10 +61,6 @@ class EvoFuncRandomWalk {
                         if (e.keyCode == KeyEvent.VK_ENTER) {
                             saveCanvasAsImage()
                         }
-                        if (e.keyCode == KeyEvent.VK_N) {
-                            println("new dna")
-                            organism.dna = Genetic.buildDNA(3 + Random.nextInt(5))
-                        }
                     }
                 })
             }
@@ -55,15 +68,18 @@ class EvoFuncRandomWalk {
             override fun paintComponent(g: Graphics) {
                 super.paintComponent(g)
 
-                organism.step(1000000)
-                organism.express(canvasGraphics)
-               // println(organism.dna)
+                for (organism in organisms) {
+                    organism.step(50000)
+                    organism.entropy = Entropy.calculateNormalizedEntropy(organism.buffer)
+                    organism.express(canvasGraphics)
 
-                val normalizedEntropy = Entropy.calculateNormalizedEntropy(canvas)
-                if (normalizedEntropy < 0.05) {
-                    Genetic.mutateDna(organism.dna, probability = 0.2)
-                } else {
-                    Genetic.mutateDna(organism.dna, probability = 0.2)
+                    if (organism.entropy > maxEntropy) {
+                        maxEntropy = organism.entropy
+                        println("i,maxent: $i, $maxEntropy")
+                        Genetic.mutateDna(organism.dna, probability = 0.0)
+                    } else {
+                        Genetic.mutateDna(organism.dna, probability = 0.1)
+                    }
                 }
 
                 if (saveOutput && (i > 0 && (i % saveOutputFrequency == 0))) {
@@ -84,7 +100,7 @@ class EvoFuncRandomWalk {
             private fun getMutationRate(normalizedEntropy: Double, minRate: Double = 0.01, maxRate: Double = 1.0): Double {
                 val mutationRate = minRate + (1.0 - normalizedEntropy) * (maxRate - minRate)
                 //println("entropy: $normalizedEntropy, mutation: $mutationRate")
-                return mutationRate
+                return mutationRate / 4
             }
 
             private fun saveCanvasAsImage() {
@@ -103,14 +119,7 @@ class EvoFuncRandomWalk {
 
         while (true) {
             panel.repaint()
-//            sleep(2000)
         }
-    }
-
-    fun squashPoint(point: Point, targetWidth: Int, targetHeight: Int, originalMax: Int): Point {
-        val scaledX = (point.x / originalMax.toDouble()) * targetWidth
-        val scaledY = (point.y / originalMax.toDouble()) * targetHeight
-        return Point(scaledX, scaledY)
     }
 
 }

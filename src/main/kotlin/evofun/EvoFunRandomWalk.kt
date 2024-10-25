@@ -2,7 +2,8 @@ package evofun
 
 import evofun.bio.Genetic
 import evofun.bio.Organism
-import evofun.image.ImageDifference
+import evofun.geometry.Point
+import evofun.image.Entropy
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -12,24 +13,23 @@ import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.WindowConstants
+import kotlin.random.Random
 
 fun main(args: Array<String>) {
-    evofun.EvoFuncEvolveImage().run()
+    EvoFunRandomWalk().run()
 }
 
-class EvoFuncEvolveImage {
-    // 16:9 = 512x288
-    private val targetImageFileName = "octopus.png"
-    private var targetImage: BufferedImage = ImageIO.read(Thread.currentThread().contextClassLoader.getResource(targetImageFileName))
-    private val worldWidth = targetImage.width
-    private val worldHeight = targetImage.height
+class EvoFunRandomWalk {
+    // 16:9 512x288
+    private val worldWidth = 512
+    private val worldHeight = 512
+    private val saveOutput = true
+    private val saveOutputFrequency = 10
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
-    private val imageDifference = ImageDifference(2)
-    private val genesCount = 7
-    private var organism = Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
-    private var mostFitOrganism = Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
-    private var minErrorScore = Double.MAX_VALUE
+    private val genesCount = 25
+    private var organism =
+        Organism(dna = Genetic.buildDNA(genesCount), worldWidth, worldHeight)
 
     fun run() {
         var i = 0
@@ -46,7 +46,7 @@ class EvoFuncEvolveImage {
                         }
                         if (e.keyCode == KeyEvent.VK_N) {
                             println("new dna")
-                            organism.dna = Genetic.buildDNA(genesCount)
+                            organism.dna = Genetic.buildDNA(3 + Random.nextInt(5))
                         }
                     }
                 })
@@ -57,17 +57,17 @@ class EvoFuncEvolveImage {
 
                 organism.step(1000000)
                 organism.express(canvasGraphics)
+               // println(organism.dna)
 
-                val error = imageDifference.compare(canvas, targetImage)
-                if (error < minErrorScore) {
-                    println("$i, $error")
-                    minErrorScore = error
-                    mostFitOrganism = organism.clone()
-                    Genetic.mutateDna(organism.dna, probability = 0.1)
-                    saveCanvasAsImage()
+                val normalizedEntropy = Entropy.calculateNormalizedEntropy(canvas)
+                if (normalizedEntropy < 0.05) {
+                    Genetic.mutateDna(organism.dna, probability = 0.2)
                 } else {
-                    organism = mostFitOrganism.clone() // reset
-                    Genetic.mutateDna(organism.dna, probability = 0.1)
+                    Genetic.mutateDna(organism.dna, probability = 0.2)
+                }
+
+                if (saveOutput && (i > 0 && (i % saveOutputFrequency == 0))) {
+                    saveCanvasAsImage()
                 }
 
                 g.drawImage(canvas, 0, 0, width, height, this)
@@ -75,10 +75,22 @@ class EvoFuncEvolveImage {
                 i++
             }
 
+            /*
+             * normalized entropy between 0.0 and 1.0
+             * Scale mutation rate based on normalized entropy
+             * Higher entropy means lower mutation rate (more interesting images need less mutation)
+             *
+             */
+            private fun getMutationRate(normalizedEntropy: Double, minRate: Double = 0.01, maxRate: Double = 1.0): Double {
+                val mutationRate = minRate + (1.0 - normalizedEntropy) * (maxRate - minRate)
+                //println("entropy: $normalizedEntropy, mutation: $mutationRate")
+                return mutationRate
+            }
+
             private fun saveCanvasAsImage() {
                 val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_$i.png"
                 ImageIO.write(canvas, "png", File(fileName))
-                //println("saved image to $fileName")
+                println("saved image to $fileName")
             }
         }
 
@@ -91,7 +103,14 @@ class EvoFuncEvolveImage {
 
         while (true) {
             panel.repaint()
+//            sleep(2000)
         }
+    }
+
+    fun squashPoint(point: Point, targetWidth: Int, targetHeight: Int, originalMax: Int): Point {
+        val scaledX = (point.x / originalMax.toDouble()) * targetWidth
+        val scaledY = (point.y / originalMax.toDouble()) * targetHeight
+        return Point(scaledX, scaledY)
     }
 
 }

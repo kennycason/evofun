@@ -15,10 +15,10 @@ import javax.swing.WindowConstants
 import kotlin.random.Random
 
 fun main(args: Array<String>) {
-    evofun.EvoFuncEvolveEntropy().run()
+    EvoFunEvolveEntropy().run()
 }
 
-class EvoFuncEvolveEntropy {
+class EvoFunEvolveEntropy {
     // 16:9 512x288
     private val worldWidth = 512
     private val worldHeight = 512

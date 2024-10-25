@@ -19,10 +19,10 @@ import javax.swing.JPanel
 import javax.swing.WindowConstants
 
 fun main(args: Array<String>) {
-    EvoFuncHalloweenPartyRandomWalk().run()
+    EvoFunHalloweenPartyRandomWalk().run()
 }
 
-class EvoFuncHalloweenPartyRandomWalk {
+class EvoFunHalloweenPartyRandomWalk {
     // 16:9 512x288
     private val worldWidth = 640 * 1
     private val worldHeight = 360 * 1
@@ -40,7 +40,7 @@ class EvoFuncHalloweenPartyRandomWalk {
     private var turnsSinceEntropyAboveThreshold = 0
     private var mutationRate = 0.05
     private val saveImage = true
-    private val imageFolderBase = "/tmp/evofunc_${System.currentTimeMillis() / 1000}/"
+    private val imageFolderBase = "/tmp/evofun_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
    // private val beatDetector = BeatDetector()
 //    init {
