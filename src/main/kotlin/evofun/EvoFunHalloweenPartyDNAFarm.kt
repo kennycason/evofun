@@ -1,5 +1,6 @@
 package evofun
 
+import evofun.bio.DNA
 import evofun.bio.DNAFarm
 import evofun.bio.Genetic
 import evofun.bio.Organism
@@ -33,8 +34,8 @@ class EvoFunHalloweenPartyDNAFarm {
     private val saveImage = false
     private val imageFolderBase = "/tmp/evofun_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
-    private val maxGeneCount = 50
-    private var organism = buildOrganism()
+    private val maxGeneCount = 75
+    private var organism = loadRandomOrganism()
 
     fun run() {
         var i = 0
@@ -50,8 +51,19 @@ class EvoFunHalloweenPartyDNAFarm {
                             saveCanvasAsImage()
                         }
                         if (e.keyCode == KeyEvent.VK_N) {
-                            println("new dna")
-                            organism = buildOrganism()
+                            println("build new random dna")
+                            organism = Organism(dna = Genetic.buildDNA(Dice.nextInt(maxGeneCount) + 1), worldWidth, worldHeight)
+                            turnsSinceEntropyAboveThreshold = 0
+                        }
+                        if (e.keyCode == KeyEvent.VK_B) {
+                            println("reproduce new dna from farm")
+                            organism = birthNewOrganism()
+                            turnsSinceEntropyAboveThreshold = 0
+                        }
+                        if (e.keyCode == KeyEvent.VK_R) {
+                            println("load random dna from farm")
+                            organism = loadRandomOrganism()
+                            turnsSinceEntropyAboveThreshold = 0
                         }
                         if (e.keyCode == KeyEvent.VK_S) {
                             println("save dna")
@@ -84,12 +96,12 @@ class EvoFunHalloweenPartyDNAFarm {
 
                 if (turnsEntropyIsBelowThreshold > 5) {
                     println("reset because boring")
-                    organism = buildOrganism()
+                    organism = birthNewOrganism()
                 } else if (turnsSinceEntropyAboveThreshold >= 100) {
                     println("reset because pattern hit 100 iterations")
-                    organism = buildOrganism()
+                    organism = birthNewOrganism()
                 } else {
-                    mutationRate = getMutationRate(organism.entropy, minRate = 0.01, maxRate = 0.05)
+                    mutationRate = getMutationRate(organism.entropy, minRate = 0.005, maxRate = 0.0075)
                     Genetic.mutateDna(organism.dna, probability = mutationRate)
                 }
 
@@ -134,11 +146,23 @@ class EvoFunHalloweenPartyDNAFarm {
         }
     }
 
-    private fun buildOrganism(): Organism {
+    private fun loadRandomOrganism(): Organism {
         val dnaFormFarm = dnaFarm.readRandomDNA()
         dnaFormFarm ?: return Organism(dna = Genetic.buildDNA(Dice.nextInt(maxGeneCount) + 1), worldWidth, worldHeight)
         println("read dna from farm")
         return Organism(dna = dnaFormFarm, worldWidth, worldHeight)
+    }
+
+    private fun birthNewOrganism(): Organism {
+        val organismA = loadRandomOrganism()
+        val organismB = loadRandomOrganism()
+        val clone: DNA = Genetic.reproduce(organismA.dna, organismB.dna)
+        println("----")
+        println(organismA.dna)
+        println(organismB.dna)
+        println(clone)
+        println("----")
+        return Organism(dna = clone, worldWidth, worldHeight, entropy = (organismA.entropy + organismB.entropy) / 2)
     }
 
 }

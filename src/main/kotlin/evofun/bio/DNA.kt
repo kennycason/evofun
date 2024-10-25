@@ -7,7 +7,7 @@ import java.util.UUID
 import kotlin.text.Charsets.UTF_8
 
 data class DNA(
-    val genes: List<Gene>,
+    val genes: MutableList<Gene>,
     val colorGene: ColorGene,
     var geneExpressionOrder: GeneExpressionOrder,
 ) {
@@ -45,7 +45,7 @@ data class DNA(
 
     data class ColorGene(
         var algorithm: ColorAlgorithm,
-        var genes: List<Gene>,
+        var genes: MutableList<Gene>,
         var alpha: Double
     ) {
         enum class ColorAlgorithm {

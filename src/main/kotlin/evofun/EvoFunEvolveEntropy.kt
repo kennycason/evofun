@@ -87,7 +87,7 @@ class EvoFunEvolveEntropy {
 
             private fun saveCanvasAsImage() {
                 val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_$i.png"
-                ImageIO.write(canvas, "png", File(fileName))
+                //ImageIO.write(canvas, "png", File(fileName))
                 println("saved image to $fileName")
             }
         }

@@ -23,12 +23,14 @@ import evofun.function2d.Squared
 import evofun.function2d.Swirl
 import evofun.function2d.Translate
 import evofun.random.Dice
+import kotlin.math.max
+import kotlin.math.min
 
 object Genetic {
 
     fun buildDNA(length: Int): DNA {
         return DNA(
-            genes = List(size = length) { randomGene() },
+            genes = MutableList(size = length) { randomGene() },
             colorGene = buildRandomColorGene(),
             geneExpressionOrder = DNA.GeneExpressionOrder.SEQUENTIAL_ITERATIVE
         )
@@ -37,7 +39,7 @@ object Genetic {
     private fun buildRandomColorGene(): DNA.ColorGene {
         return DNA.ColorGene(
             algorithm = DNA.ColorGene.ColorAlgorithm.FUNCTIONS, // DNA.ColorGene.ColorAlgorithm.entries.random(),
-            genes = List(size = 3) { randomGene() },
+            genes = MutableList(size = 3) { randomGene() },
             alpha = Dice.nextDouble()
         )
     }
@@ -86,13 +88,30 @@ object Genetic {
         colorGene.alpha = mutateDouble(colorGene.alpha, probability, min = 0.5, max = 1.0)
     }
 
-
     private fun mutateDouble(value: Double, probability: Double, min: Double = -1.0, max: Double = 1.0): Double {
         if (Dice.nextDouble() >= probability) return value
         val newValue = value + Dice.randomDouble() / 10
         return if (newValue < min) min
         else if (newValue > max) max
         else newValue
+    }
+
+    fun reproduce(dna1: DNA, dna2: DNA): DNA {
+        val longestDna =  if (dna1.genes.size >= dna2.genes.size) dna1 else dna2
+        val shortestDna =  if (dna1.genes.size < dna2.genes.size) dna1 else dna2
+
+        val clone = clone(longestDna)
+        for (i in 0 until shortestDna.genes.size) {
+            if (Dice.nextBoolean()) {
+                clone.genes[i] = shortestDna.genes[i]
+            }
+        }
+        for (i in 0 until shortestDna.colorGene.genes.size) {
+            if (Dice.nextBoolean()) {
+                clone.colorGene.genes[i] = shortestDna.colorGene.genes[i]
+            }
+        }
+        return clone
     }
 
     fun express(dna: DNA): ExpressedDNA {
@@ -185,7 +204,7 @@ object Genetic {
                     e = it.e,
                     f = it.f
                 )
-            },
+            }.toMutableList(),
             colorGene = DNA.ColorGene(
                 algorithm = dna.colorGene.algorithm,
                 genes = dna.genes.map {
@@ -198,7 +217,7 @@ object Genetic {
                         e = it.e,
                         f = it.f
                     )
-                },
+                }.toMutableList(),
                 alpha = dna.colorGene.alpha
             ),
             geneExpressionOrder = dna.geneExpressionOrder
