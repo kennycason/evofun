@@ -6,6 +6,7 @@ import evofun.bio.Genetic
 import evofun.bio.Organism
 import evofun.image.Entropy
 import evofun.random.Dice
+import evofun.util.padWithZeros
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
@@ -26,6 +27,7 @@ class EvoFunHalloweenPartyDNAFarm {
     // 16:9 512x288
     private val worldWidth = 640
     private val worldHeight = 360
+    private val scale = 2
     private val canvas = BufferedImage(worldWidth, worldHeight, BufferedImage.TYPE_INT_ARGB)
     private val canvasGraphics = canvas.graphics
     private var turnsEntropyIsBelowThreshold = 0
@@ -34,7 +36,7 @@ class EvoFunHalloweenPartyDNAFarm {
     private val saveImage = false
     private val imageFolderBase = "/tmp/evofun_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
-    private val maxGeneCount = 75
+    private val maxGeneCount = 50
     private var organism = loadRandomOrganism()
 
     fun run() {
@@ -86,7 +88,7 @@ class EvoFunHalloweenPartyDNAFarm {
                 organism.express(canvasGraphics)
                 organism.entropy = Entropy.calculateNormalizedEntropy(canvas)
 
-                if (organism.entropy <= 0.015) {
+                if (organism.entropy <= 0.01) {
                     turnsEntropyIsBelowThreshold++
                     turnsSinceEntropyAboveThreshold = 0
                 } else {
@@ -100,6 +102,7 @@ class EvoFunHalloweenPartyDNAFarm {
                 } else if (turnsSinceEntropyAboveThreshold >= 100) {
                     println("reset because pattern hit 100 iterations")
                     organism = birthNewOrganism()
+                    turnsSinceEntropyAboveThreshold = 0
                 } else {
                     mutationRate = getMutationRate(organism.entropy, minRate = 0.005, maxRate = 0.0075)
                     Genetic.mutateDna(organism.dna, probability = mutationRate)
@@ -109,7 +112,7 @@ class EvoFunHalloweenPartyDNAFarm {
                 g.drawImage(canvas, 0, 0, width, height, this)
                 if (saveImage) saveCanvasAsImage()
                 i++
-                // println(organism.dna)
+//                println(organism.dna.genes.joinToString { it.function.name })
             }
 
             /*
@@ -127,7 +130,7 @@ class EvoFunHalloweenPartyDNAFarm {
                 if (!file.exists()) {
                     file.mkdirs()  // Create the directory if it does not exist
                 }
-                val fileName = "$imageFolderBase$i.png"
+                val fileName = "$imageFolderBase${i.padWithZeros(5)}.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 // println("saved image to $fileName")
             }
@@ -135,7 +138,7 @@ class EvoFunHalloweenPartyDNAFarm {
 
         val frame = JFrame()
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.setSize(worldWidth, worldHeight + 18)
+        frame.setSize(worldWidth * scale, (worldHeight * scale) + 18)
         frame.isVisible = true
         frame.add(panel)
         panel.revalidate()

@@ -37,6 +37,9 @@ data class DNA(
         SQUARED,
         SWIRL,
 
+//        MANDELBROT_LIKE,
+//        RADIAL_BLUR,
+
         ROTATE,
         SCALE,
         TRANSLATE,

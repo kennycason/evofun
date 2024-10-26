@@ -20,4 +20,10 @@ Render a constantly evolving set of composed functions. Color algorithm mutates 
 
 ## Images to Video
 
-`ffmpeg -framerate 8 -pattern_type glob -i "*.png" -vf "scale=1280:720,fps=8" -c:v libx264 -b:v 5000k -crf 16 -pix_fmt yuv420p functions.mp4`
+### Youtube Quality
+
+`ffmpeg -framerate 8 -pattern_type glob -i "*.png" -vf "scale=1280:720,fps=8" -c:v libx264 -b:v 5000k -crf 16 -pix_fmt yuv420p pokemon.mp4`
+
+### Basic Quality
+
+`ffmpeg -framerate 8 -pattern_type glob -i "*.png" -c:v libx264 -pix_fmt yuv420p pokemon.mp4`

@@ -4,6 +4,7 @@ import evofun.bio.Genetic
 import evofun.bio.Organism
 import evofun.geometry.Point
 import evofun.image.Entropy
+import evofun.util.padWithZeros
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -88,7 +89,7 @@ class EvoFunRandomWalk {
             }
 
             private fun saveCanvasAsImage() {
-                val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_$i.png"
+                val fileName = "/tmp/iteration_${System.currentTimeMillis() / 1000}_${i.padWithZeros(5)}.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 println("saved image to $fileName")
             }

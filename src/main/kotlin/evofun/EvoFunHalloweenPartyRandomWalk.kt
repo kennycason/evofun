@@ -6,6 +6,7 @@ import evofun.bio.Genetic
 import evofun.bio.Organism
 import evofun.image.Entropy
 import evofun.random.Dice
+import evofun.util.padWithZeros
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
@@ -137,7 +138,7 @@ class EvoFunHalloweenPartyRandomWalk {
                 if (!file.exists()) {
                     file.mkdirs()  // Create the directory if it does not exist
                 }
-                val fileName = "$imageFolderBase$i.png"
+                val fileName = "$imageFolderBase${i.padWithZeros(5)}.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 // println("saved image to $fileName")
             }

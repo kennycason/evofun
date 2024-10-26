@@ -12,7 +12,9 @@ import evofun.function2d.Horseshoe
 import evofun.function2d.Parabola
 import evofun.function2d.Pdj
 import evofun.function2d.Function2D
+import evofun.function2d.MandelbrotLike
 import evofun.function2d.Popcorn
+import evofun.function2d.RadialBlur
 import evofun.function2d.Rotate
 import evofun.function2d.Scale
 import evofun.function2d.SinCos
@@ -140,6 +142,9 @@ object Genetic {
             DNA.GeneFunction.SPIRAL -> Spiral(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
             DNA.GeneFunction.SQUARED -> Squared(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
             DNA.GeneFunction.SWIRL -> Swirl(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
+
+//            DNA.GeneFunction.MANDELBROT_LIKE -> MandelbrotLike(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
+//            DNA.GeneFunction.RADIAL_BLUR -> RadialBlur(a = gene.a, b = gene.b, intensity = gene.c)
 
             DNA.GeneFunction.ROTATE -> Rotate(theta = gene.a, centerX = gene.b, centerY = gene.c)
             DNA.GeneFunction.SCALE -> Scale(scaleX = gene.a, scaleY = gene.b)

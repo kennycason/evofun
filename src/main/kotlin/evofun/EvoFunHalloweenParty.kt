@@ -4,6 +4,7 @@ import evofun.bio.Genetic
 import evofun.bio.Organism
 import evofun.image.Entropy
 import evofun.random.Dice
+import evofun.util.padWithZeros
 import java.awt.Graphics
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -112,7 +113,7 @@ class EvoFunHalloweenParty {
             }
 
             private fun saveCanvasAsImage() {
-                val fileName = "/tmp/halloween_demo_${System.currentTimeMillis() / 1000}_$i.png"
+                val fileName = "/tmp/halloween_demo_${System.currentTimeMillis() / 1000}_${i.padWithZeros(5)}.png"
                 ImageIO.write(canvas, "png", File(fileName))
                 println("saved image to $fileName")
             }
