@@ -33,7 +33,7 @@ class EvoFunHalloweenPartyDNAFarm {
     private var turnsEntropyIsBelowThreshold = 0
     private var turnsSinceEntropyAboveThreshold = 0
     private var mutationRate = 0.05
-    private val saveImage = false
+    private val saveImage = true
     private val imageFolderBase = "/tmp/evofun_${System.currentTimeMillis() / 1000}/"
     private val dnaFarm = DNAFarm()
     private val maxGeneCount = 50
@@ -128,7 +128,8 @@ class EvoFunHalloweenPartyDNAFarm {
             private fun saveCanvasAsImage() {
                 val file = File(imageFolderBase)
                 if (!file.exists()) {
-                    file.mkdirs()  // Create the directory if it does not exist
+                    println("Creating organism folder: $imageFolderBase")
+                    file.mkdirs()
                 }
                 val fileName = "$imageFolderBase${i.padWithZeros(5)}.png"
                 ImageIO.write(canvas, "png", File(fileName))

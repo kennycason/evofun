@@ -144,7 +144,7 @@ object Genetic {
             DNA.GeneFunction.SWIRL -> Swirl(a = gene.a, b = gene.b, c = gene.c, d = gene.d)
 
 //            DNA.GeneFunction.MANDELBROT_LIKE -> MandelbrotLike(a = gene.a, b = gene.b, c = gene.c, d = gene.d, e = gene.e, f = gene.f)
-//            DNA.GeneFunction.RADIAL_BLUR -> RadialBlur(a = gene.a, b = gene.b, intensity = gene.c)
+//            DNA.GeneFunction.RADIAL_BLUR -> RadialBlur(a = gene.a, b = gene.b, intensity = gessne.c)
 
             DNA.GeneFunction.ROTATE -> Rotate(theta = gene.a, centerX = gene.b, centerY = gene.c)
             DNA.GeneFunction.SCALE -> Scale(scaleX = gene.a, scaleY = gene.b)
