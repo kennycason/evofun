@@ -16,7 +16,9 @@ Render a constantly evolving set of composed functions. Color algorithm mutates 
 
 ## Dev Log Videos
 
-- https://www.youtube.com/watch?v=bDJs5xCmJcs&list=PLyq8DV4jEYwMjysUxwj8uX9dDQvXjUGIG
+- https://www.youtube.com/watch?v=bDJs5xCmJcs
+- https://www.youtube.com/watch?v=xYB6IgKBQOY
+- https://www.youtube.com/watch?v=iowYCd0iKcg
 
 ## Images to Video
 
